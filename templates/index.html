@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+{% block content %}
+<main class="container-fluid" id="home-content">
+    <h1>Weather Forecast</h1>
+    <form autocomplete="off" onsubmit="return validateWeatherForm()" id="form-weather" name="form-weather">
+        <div class="row">
+            <div class="col-12 col-md-8 mb-3">
+                <div class="form-floating">
+                    <input type="text" class="form-control" id="city" placeholder="Enter city" oninput="getSuggestions()">
+                    <label for="city">City</label>
+                    <ul id="city-suggestions" class="dropdown-menu" aria-labelledby="city" style="width: 100%;"></ul>
+                </div>
+            </div>
+            <button type="submit" class="btn btn-primary col-12 col-md-4 mb-3" id="btn-get-forecast">Get Forecast</button>
+        </div>
+        
+        <input type="hidden" id="lat" name="lat">
+        <input type="hidden" id="lon" name="lon">
+    </form>
+    <div id="alert-city" class="alert alert-warning d-none" role="alert">
+        Please select a city from the dropdown to get the forecast.
+    </div>
+    <div id="spinner-forecast-results" class="spinner-border text-primary d-none" role="status">
+    <span class="visually-hidden">Loading...</span>
+    </div>
+    <div id="forecast-results" class="mt-3">
+        <ul id="forecast-list" class="list-group">
+        </ul>
+    </div>
+</main>
+{% endblock %}
