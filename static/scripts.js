@@ -9,9 +9,8 @@ function getSuggestions() {
     if (inputCity.value.length < 3) {
         return;
     }
-    const url = `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(city)}&count=10&language=en&format=json`;
-
-    fetch(url)
+    
+    fetch(`${url_get_suggestions}?city=${city}`)
         .then(response => response.json())
         .then(data => {
             const suggestions = data.results;
@@ -59,6 +58,7 @@ function validateWeatherForm() {
 
 function getForecast(lat, lon) {
     const spinnerForecastResults = document.querySelector('#spinner-forecast-results');
+    const headerCity = document.querySelector('#header-city');
     spinnerForecastResults.classList.remove('d-none');
 
     fetch(`${url_get_forecast}?lat=${lat}&lon=${lon}`)
@@ -66,25 +66,12 @@ function getForecast(lat, lon) {
         .then((data) => {
             console.log(data);
             updateForecastList(
-                processProphetForecast(data['prophet_forecast']),
-                processOpenMeteoForecast(data['open_meteo_forecast'])
+                processProphetForecast(data)
             )
             spinnerForecastResults.classList.add('d-none');
+            headerCity.innerText = document.querySelector('#city').value;
         })
         .catch(error => console.error('Error fetching forecast:', error));
-}
-
-function processOpenMeteoForecast(data) {
-    return data.time.map((date, index) => {
-        return {
-            date: date,
-            temperatureMax: data.temperature_2m_max[index],
-            temperatureMin: data.temperature_2m_min[index],
-            precipitation: data.precipitation_sum[index],
-            windSpeedMax: data.wind_speed_10m_max[index],
-            windDirection: data.wind_direction_10m_dominant[index]
-        };
-    });
 }
 
 function processProphetForecast(data) {
@@ -100,21 +87,18 @@ function processProphetForecast(data) {
     });
 }
 
-function updateForecastList(internalForecastData, externalForecastData) {
-    const forecastList = document.getElementById('forecast-list');
+function updateForecastList(forecastData) {
+    const forecastList = document.querySelector('#forecast-list');
     forecastList.innerHTML = '';
 
-    for (let i = 0; i < internalForecastData.length; i++) {
-        const internalForecast = internalForecastData[i];
-        const externalForecast = externalForecastData[i];
+    for (let i = 0; i < forecastData.length; i++) {
+        const internalForecast = forecastData[i];
 
         const listItem = document.createElement('li');
         listItem.className = 'list-group-item';
         listItem.innerHTML = `
             <strong>Date:</strong> ${internalForecast.date}<br>
-            <strong>Prophet Forecast</strong> - Max Temp: ${internalForecast.temperatureMax}°C, Min Temp: ${internalForecast.temperatureMin}°C, Precipitation: ${internalForecast.precipitation}mm, Wind Speed: ${internalForecast.windSpeedMax}, Wind Direction: ${internalForecast.windDirection}<br>
-            <strong>Open Meteo Forecast</strong> - Max Temp: ${externalForecast.temperatureMax}°C, Min Temp: ${externalForecast.temperatureMin}°C, Precipitation: ${externalForecast.precipitation}mm, Wind Speed: ${externalForecast.windSpeedMax}, Wind Direction: ${externalForecast.windDirection}
-        `;
+            Max Temp: ${internalForecast.temperatureMax}°C, Min Temp: ${internalForecast.temperatureMin}°C, Precipitation: ${internalForecast.precipitation}mm, Wind Speed: ${internalForecast.windSpeedMax}, Wind Direction: ${internalForecast.windDirection}`;
 
         forecastList.appendChild(listItem);
     }

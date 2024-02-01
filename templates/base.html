@@ -14,6 +14,7 @@
     {% endblock %}
     <script>
         const url_get_forecast = {{ url_for("get_forecast")|tojson }}
+        const url_get_suggestions = {{ url_for("get_suggestions")|tojson }}
     </script>
 </body>
 </html>
