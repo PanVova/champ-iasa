@@ -4,7 +4,10 @@
 This project is a Flask-based web application for providing weather forecasts. It integrates with the OpenMeteo API to fetch and display weather data based on user input. The application is designed to be user-friendly and efficient, offering both current and future weather data.
 
 Here is the quick video showing the project
-https://sendspark.com/share/z43rqmqyn8nph4v3gqfl1klj895brx9s
+
+https://github.com/PanVova/champ-iasa/assets/37262034/ae4b87fb-741c-470e-b3d0-fe2cca1d207e
+
+
 
 ## Features
 - Real-time weather forecasts
