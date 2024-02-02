@@ -102,24 +102,24 @@ Its MAE (normalized): 0.5287
 Although this error is significant, some parameters (like temperature) have much lower error values, and can be predicted with high accuracy.  
   - Temperature  
 Temperature forecasting has the smallest error, due to the clear seasonal patterns in the data.
-![temperature_max](docs/temperature_max.png)
-![temperature_min](docs/temperature_min.png)
+> ![temperature_max](docs/temperature_max.png)
+> ![temperature_min](docs/temperature_min.png)
   - Precipitation  
 This parameter is characterized by relatively low values and then sudden spikes; thus, the model averaged the predictions near the zero mark.
-![precipitation](docs/precipitation.png)
+> ![precipitation](docs/precipitation.png)
   - Humidity  
 Humidity has a certain seasonal pattern, though the error is still significant.
-![humidity](humidity.png)
+> ![humidity](docs/humidity.png)
   - Cloud cover  
 While there is a noticable seasonal component to cloud cover, this parameter is mostly chaotic for the model, leading to significant errors.
-![cloud_cover](docs/cloud_cover.png)
+> ![cloud_cover](docs/cloud_cover.png)
   - Wind  
 Wind speed and direction are highly chaotic and do not exhibit trend or seasonality, so the model struggled with predicting this parameter.
-![wind_x](docs/wind_x.png)
-![wind_y](docs/wind_y.png)
+> ![wind_x](docs/wind_x.png)
+> ![wind_y](docs/wind_y.png)
   - Pressure  
 Pressure is mostly chaotic, with a slight seasonal pattern/
-![pressure](docs/pressure.png)
+> ![pressure](docs/pressure.png)
 - UI  
 The UI was designed using Bootstrap to ensure a responsive and mobile-friendly design. Many Bootstrap components were used, such as alert, button, dropdown, table, and spinner.  
 The UI features a search bar with autocomplete functionality, a dropdown to select the city, and a button to get the forecast. The forecast is displayed in a table with the weather parameters and a spinner is shown while the data is being fetched.
