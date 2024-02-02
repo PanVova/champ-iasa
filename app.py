@@ -81,8 +81,11 @@ def get_forecast():
     lon = request.args.get('lon')
     days_train = 3*365 + 2
     
-    if lat is None or lon is None:
-        return jsonify({'error': 'Invalid coordinates'})
+    try:
+        lat = float(lat)
+        lon = float(lon)
+    except ValueError:
+        return jsonify({'error': 'Invalid coordinates'}), 400
     
     cache_key = f"{lat},{lon},{days_train}"
     if cache_key in forecast_cache:
