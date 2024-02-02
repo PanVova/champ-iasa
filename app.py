@@ -14,10 +14,9 @@ retry_session = retry(cache_session, retries = 5, backoff_factor = 0.2)
 openmeteo = openmeteo_requests.Client(session = retry_session)
 forecast_cache = {}
 
-lstm_year = tf.keras.models.load_model('models/lstm_year.keras')
+lstm_year = tf.keras.models.load_model('models/lstm_year.hdf5')
 
 app = Flask(__name__)
-
 
 def get_data(request):
     url = request["url"]
@@ -198,4 +197,4 @@ def wind_cartesian_to_polar(X, Y):
     
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(host='0.0.0.0', port=5000, debug=True)
