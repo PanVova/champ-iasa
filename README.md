@@ -52,12 +52,13 @@ flask run
 ```
 
 ## Usage
-To use the application, open your web browser and go to [http://localhost:5000](http://localhost:5000). You will see the following page.
-![alt text](docs/usage_1.png)  
-Enter the name of the city you want to search for, and Open-Meteo will return a list of best matches.
-![alt text](docs/usage_2.png)  
-Select a city from the dropdown and click on the "Get Forecast" button. You will see the weather forecast for the next year.
-![alt text](docs/usage_3.png)  
+
+| Step | Action | Screenshot |
+|------|--------|------------|
+| 1    | Open your web browser and go to [http://localhost:5000](http://localhost:5000). | ![Screenshot 1](docs/usage_1.png) |
+| 2    | Enter the name of the city you want to search for. Open-Meteo will return a list of best matches. | ![Screenshot 2](docs/usage_2.png) |
+| 3    | Select a city from the dropdown and click on the "Get Forecast" button. You will then see the weather forecast for the next year. | ![Screenshot 3](docs/usage_3.png) |
+
 
 ## Weather Parameters
 The weather forecast includes the following parameters:
