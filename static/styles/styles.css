@@ -3,3 +3,18 @@
     padding-right: 10vw;
     max-width: 1500px;
 }
+
+.forecast-temperature-max {
+    font-size: 1.25rem;
+    font-weight: 700;
+}
+
+.forecast-temperature-min {
+    font-size: 1.125rem;
+}
+
+.icon {
+    height: 1.5em;
+    width: auto;
+    vertical-align: middle;
+}

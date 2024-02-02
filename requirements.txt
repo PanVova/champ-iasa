@@ -1,4 +1,3 @@
-prophet
 flask
 requests
 numpy
@@ -6,3 +5,7 @@ pandas
 openmeteo-requests
 requests-cache
 retry-requests
+tensorflow
+seaborn
+joblib
+scikit-learn

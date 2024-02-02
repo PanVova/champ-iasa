@@ -1,18 +1,20 @@
 from flask import Flask, render_template, request, jsonify
 import requests
-from prophet import Prophet
-from prophet.plot import plot, plot_components
 import pandas as pd
 from datetime import datetime, timedelta
 import openmeteo_requests
 import requests_cache
 from retry_requests import retry
+import tensorflow as tf
+import numpy as np
+import joblib
 
 cache_session = requests_cache.CachedSession('.cache', expire_after = -1)
 retry_session = retry(cache_session, retries = 5, backoff_factor = 0.2)
 openmeteo = openmeteo_requests.Client(session = retry_session)
 forecast_cache = {}
 
+lstm_year = tf.keras.models.load_model('models\lstm_year.keras')
 
 app = Flask(__name__)
 
@@ -78,18 +80,19 @@ def index():
 def get_forecast():
     lat = request.args.get('lat')
     lon = request.args.get('lon')
-    years_train = request.args.get('years_train', 3)
+    days_train = 3*365 + 2
     
     if lat is None or lon is None:
         return jsonify({'error': 'Invalid coordinates'})
     
-    cache_key = f"{lat},{lon},{years_train}"
+    cache_key = f"{lat},{lon},{days_train}"
     if cache_key in forecast_cache:
+        print("Found cached forecast.")
         return jsonify(forecast_cache[cache_key])
     
     today = datetime.utcnow()
     end_date = today.strftime("%Y-%m-%d")
-    years_before = today - timedelta(days=365*years_train)
+    years_before = today - timedelta(days=days_train)
     start_date = years_before.strftime("%Y-%m-%d")
     
     req = {
@@ -114,10 +117,12 @@ def get_forecast():
                 "daily": ["temperature_2m_max", "temperature_2m_min", "precipitation_sum", "wind_speed_10m_max", "wind_direction_10m_dominant"],
                 "timezone": "GMT",
                 "past_days": 1,
-                "forecast_days": 1
+                "forecast_days": 0,
+                "date": end_date
             }
         }
     }
+    
     
     df_archive = get_data(req['archive'])
     df_forecast = get_data(req['forecast'])
@@ -126,33 +131,46 @@ def get_forecast():
     df = df_archive.combine_first(df_forecast)
     df.reset_index(inplace=True)
     
-    dataframes = {
-        'temperature_max': pd.DataFrame({'ds': df['date'], 'y': df['temperature_2m_max']}),
-        'temperature_min': pd.DataFrame({'ds': df['date'], 'y': df['temperature_2m_min']}),
-        'precipitation': pd.DataFrame({'ds': df['date'], 'y': df['precipitation_sum']}),
-        'wind_speed_max': pd.DataFrame({'ds': df['date'], 'y': df['wind_speed_10m_max']}),
-        'wind_direction': pd.DataFrame({'ds': df['date'], 'y': df['wind_direction_10m_dominant']})
-    }
-    models = {}
+    df = df.iloc[-1095:]
+    wind_direction_radians = np.radians(270 - df['wind_direction_10m_dominant'])
+    df['wind_speed_10m_max_X'] = df['wind_speed_10m_max'] * np.cos(wind_direction_radians)
+    df['wind_speed_10m_max_Y'] = df['wind_speed_10m_max'] * np.sin(wind_direction_radians)
+    timestamp = df['date'].map(pd.Timestamp.timestamp)
+    day = 24*60*60
+    year = (365.2425)*day
 
-    for param, df in dataframes.items():
-        model = Prophet()
-        model.fit(df)
-        models[param] = model
-        
-    future = models['temperature_max'].make_future_dataframe(periods=6)
+    df['Year sin'] = np.sin(timestamp * (2 * np.pi / year))
+    df['Year cos'] = np.cos(timestamp * (2 * np.pi / year))
+    df.drop(columns=['wind_direction_10m_dominant', 'wind_speed_10m_max', 'date'], inplace=True)
+    scaler = joblib.load('models/scaler.save')
     
-    forecasts = {}
-    for param, model in models.items():
-        forecasts[param] = model.predict(future)
+    df = scaler.transform(df)
+    df = np.expand_dims(df, axis=0)
     
-    forecast_combined = future[['ds']].copy()
+    predictions = lstm_year.predict(df)
+    predictions = predictions.reshape(365, 10)
+    
+    predictions = scaler.inverse_transform(predictions)
+    
+    
+    columns = ['temperature_2m_max', 'temperature_2m_min', 'precipitation_sum', 
+           'relative_humidity_2m', 'pressure_msl', 'cloud_cover', 
+           'wind_speed_10m_max_X', 'wind_speed_10m_max_Y', 
+           'Year sin', 'Year cos']
+    df = pd.DataFrame(predictions, columns=columns)
+    
+    df.drop(['Year sin', 'Year cos'], axis=1, inplace=True)
 
-    for param, forecast in forecasts.items():
-        forecast_combined[param] = forecast['yhat']
-    
-    last_7_forecast_combined = forecast_combined.tail(7)
-    forecast_cache[cache_key] = last_7_forecast_combined.to_dict(orient='records')
+    start_date = 'YYYY-MM-DD'
+    date_range = pd.date_range(start=end_date, periods=len(df), freq='D')
+
+    df['date'] = date_range
+
+    df = df[['date'] + [col for col in df.columns if col != 'date']]
+    df['wind_speed_10m_max'], df['wind_direction_10m_dominant'] = wind_cartesian_to_polar(df['wind_speed_10m_max_X'], df['wind_speed_10m_max_Y'])
+    df.drop(['wind_speed_10m_max_X', 'wind_speed_10m_max_Y'], axis=1, inplace=True)
+    print(df.temperature_2m_max)
+    forecast_cache[cache_key] = df.to_dict(orient='records')
     return jsonify(forecast_cache[cache_key])
 
 
@@ -170,6 +188,14 @@ def get_suggestions():
         }
     )
     return response.json()
+
+
+def wind_cartesian_to_polar(X, Y):
+    speed = np.sqrt(X**2 + Y**2)
+    dir_radians = np.arctan2(Y, X)
+    dir_degrees = np.degrees(dir_radians)
+    dir = (270 - dir_degrees) % 360
+    return speed, dir
     
 
 if __name__ == '__main__':

@@ -65,40 +65,82 @@ function getForecast(lat, lon) {
         .then(response => response.json())
         .then((data) => {
             console.log(data);
-            updateForecastList(
-                processProphetForecast(data)
-            )
+            data_processed = processForecast(data)
+            console.log(data_processed)
+            updateForecastList(data_processed)
             spinnerForecastResults.classList.add('d-none');
             headerCity.innerText = document.querySelector('#city').value;
         })
         .catch(error => console.error('Error fetching forecast:', error));
 }
 
-function processProphetForecast(data) {
+function processForecast(data) {
     return data.map(entry => {
         return {
-            date: new Date(entry.ds).toISOString().split('T')[0],
-            temperatureMax: entry.temperature_max,
-            temperatureMin: entry.temperature_min,
-            precipitation: entry.precipitation,
-            windSpeedMax: entry.wind_speed_max,
-            windDirection: entry.wind_direction
+            date: formatDate(entry.date),
+            temperatureMax: Math.round(entry.temperature_2m_max),
+            temperatureMin: Math.round(entry.temperature_2m_min),
+            precipitation: Math.round(entry.precipitation_sum),
+            windSpeedMax: Math.round(entry.wind_speed_10m_max),
+            windDirection: Math.round(entry.wind_direction_10m_dominant),
+            cloudCover: Math.round(entry.cloud_cover),
+            pressure: Math.round(entry.pressure_msl),
+            relativeHumidity: Math.round(entry.relative_humidity_2m)
         };
     });
 }
 
+function formatDate(dateString) {
+    const options = { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' };
+    const formattedDate = new Date(dateString).toLocaleDateString('en-US', options);
+    return formattedDate;
+}
+
 function updateForecastList(forecastData) {
-    const forecastList = document.querySelector('#forecast-list');
-    forecastList.innerHTML = '';
+    const forecastList = document.querySelector('#forecast-table tbody');
+    forecastList.innerHTML = ''
 
     for (let i = 0; i < forecastData.length; i++) {
-        const internalForecast = forecastData[i];
+        const forecast = forecastData[i];
 
-        const listItem = document.createElement('li');
-        listItem.className = 'list-group-item';
-        listItem.innerHTML = `
-            <strong>Date:</strong> ${internalForecast.date}<br>
-            Max Temp: ${internalForecast.temperatureMax}°C, Min Temp: ${internalForecast.temperatureMin}°C, Precipitation: ${internalForecast.precipitation}mm, Wind Speed: ${internalForecast.windSpeedMax}, Wind Direction: ${internalForecast.windDirection}`;
+        const listItem = document.createElement('tr');
+        listItem.className = 'forecast-item';
+
+        const dateItem = document.createElement('td');
+        dateItem.className = 'forecast-date'
+        dateItem.innerHTML = `${forecast.date}`
+
+        const temperatureItem = document.createElement('td');
+        temperatureItem.className = 'forecast-temperature'
+
+        const temperatureMaxItem = document.createElement('span');
+        temperatureMaxItem.className = 'forecast-temperature-max'
+        temperatureMaxItem.innerHTML = `${forecast.temperatureMax}°`
+
+        const temperatureMinItem = document.createElement('span');
+        temperatureMinItem.className = 'forecast-temperature-min'
+        temperatureMinItem.innerHTML = `/${forecast.temperatureMin}°`
+
+        temperatureItem.appendChild(temperatureMaxItem)
+        temperatureItem.appendChild(temperatureMinItem)
+
+        const relativeHumidityItem = document.createElement('td');
+        relativeHumidityItem.className = 'forecast-relative-humidity'
+        relativeHumidityItem.innerHTML = `<img class="icon" src="/static/icons/humidity.svg" alt="Humidity">${forecast.relativeHumidity}%`
+
+        const windItem = document.createElement('td');
+        windItem.className = 'forecast-wind'
+        windItem.innerHTML = `<img class="icon" src="/static/icons/wind.svg" alt="Wind">${forecast.windSpeedMax} km/h, ${forecast.windDirection}°`
+
+        const pressureItem = document.createElement('td');
+        pressureItem.className = 'forecast-pressure'
+        pressureItem.innerHTML = `${forecast.pressure} hPa`
+
+        listItem.appendChild(dateItem)
+        listItem.appendChild(temperatureItem)
+        listItem.appendChild(relativeHumidityItem)
+        listItem.appendChild(windItem)
+        listItem.appendChild(pressureItem)
 
         forecastList.appendChild(listItem);
     }
