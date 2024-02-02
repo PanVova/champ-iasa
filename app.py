@@ -14,7 +14,7 @@ retry_session = retry(cache_session, retries = 5, backoff_factor = 0.2)
 openmeteo = openmeteo_requests.Client(session = retry_session)
 forecast_cache = {}
 
-lstm_year = tf.keras.models.load_model('models\lstm_year.keras')
+lstm_year = tf.keras.models.load_model('models/lstm_year.keras')
 
 app = Flask(__name__)
 
@@ -169,7 +169,6 @@ def get_forecast():
     df = df[['date'] + [col for col in df.columns if col != 'date']]
     df['wind_speed_10m_max'], df['wind_direction_10m_dominant'] = wind_cartesian_to_polar(df['wind_speed_10m_max_X'], df['wind_speed_10m_max_Y'])
     df.drop(['wind_speed_10m_max_X', 'wind_speed_10m_max_Y'], axis=1, inplace=True)
-    print(df.temperature_2m_max)
     forecast_cache[cache_key] = df.to_dict(orient='records')
     return jsonify(forecast_cache[cache_key])
 
