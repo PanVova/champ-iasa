@@ -17,6 +17,7 @@ def index():
 def get_languages():
     return  jsonify(languages)
 
+@app.route('/articles/<string:query>/<string:language>', methods=['GET'])
 def get_articles_by_query_and_language(query, language):
     jsonResponse = newsapi.get_everything(
         q=query,
