@@ -1,26 +1,47 @@
 $(document).ready(function () {
-	$.ajax({
-		url: 'http://localhost:5000/languages', // Your endpoint to fetch languages
-		type: 'GET',
-		success: function (data) {
-			var languageSelect = $('#languageSelect');
-			// Populate the combobox with fetched languages
-			$.each(data, function (index, language) {
-				languageSelect.append($('<option>', {
-					value: language, // Use language itself as both value and text
-					text: language
-				}));
-			});
-		},
-		error: function (xhr, status, error) {
-			console.error('Error fetching languages:', error);
-		}
-	});
+    //request for list of languages
+    fetch('http://localhost:5000/languages')
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.json();
+        })
+        .then(data => {
+            var languageSelect = $('#languageSelect');
 
-	$('#searchButton').click(function () {
-		var searchText = $('#searchText').val();
-		var selectedLanguage = $('#languageSelect').val();
+            data.forEach(language => {
+                languageSelect.append($('<option>', {
+                    value: language,
+                    text: language
+                }));
+            });
+        })
+        .catch(error => {
+            console.error('Error fetching languages:', error);
+        });
 
-		
-	});
+    // request for articles
+    $('#searchButton').click(function () {
+        var searchText = $('#searchText').val();
+        var selectedLanguage = $('#languageSelect').val();
+
+        var url = '/articles/' + encodeURIComponent(searchText) + '/' + encodeURIComponent(selectedLanguage);
+
+        fetch(url)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(data => {
+                // Log the received data to the console
+                console.log('Received articles:', data);
+                // Handle the received data accordingly
+            })
+            .catch(error => {
+                console.error('Error fetching articles:', error);
+            });
+    });
 });
