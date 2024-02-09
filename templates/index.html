@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+{% block content %}
+<main class="container-fluid" id="home-content">
+    <h1>Content suggestion</h1>
+    <div class="container mt-5">
+        <div class="row">
+          <div class="col-md-4">
+            <div class="form-group">
+              <label for="searchText">Search Text:</label>
+              <input type="text" class="form-control" id="searchText" placeholder="Enter text to search">
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="form-group">
+              <label for="languageSelect">Language:</label>
+              <select class="form-control" id="languageSelect">
+                <option value="" disabled selected>Select a language</option>
+              </select>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <button type="button" class="btn btn-primary mt-4" id="searchButton">Search</button>
+          </div>
+        </div>
+      </div>
+</main>
+{% endblock %}
