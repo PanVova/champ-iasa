@@ -1,0 +1,14 @@
+.container-fluid {
+    padding-left: 10vw;
+    padding-right: 10vw;
+    max-width: 1500px;
+}
+
+.grid {
+    margin: 0 auto;
+}
+
+.grid-item {
+    width: 300px;
+    margin-bottom: 20px;
+}

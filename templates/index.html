@@ -1,27 +1,28 @@
 {% extends 'base.html' %}
 {% block content %}
 <main class="container-fluid" id="home-content">
-    <h1>Content suggestion</h1>
-    <div class="container mt-5">
+    <h1>News Sentiment Analysis</h1>
+    <form autocomplete="off" onsubmit="return validateSearchForm()" id="form-search" name="form-search">
         <div class="row">
-          <div class="col-md-4">
-            <div class="form-group">
-              <label for="searchText">Search Text:</label>
-              <input type="text" class="form-control" id="searchText" placeholder="Enter text to search">
+            <div class="col-12 col-md-8 mb-3">
+                <div class="form-floating">
+                    <input type="text" class="form-control" id="input-query" placeholder="Enter a search term">
+                    <label for="input-query">Search query</label>
+                </div>
             </div>
-          </div>
-          <div class="col-md-4">
-            <div class="form-group">
-              <label for="languageSelect">Language:</label>
-              <select class="form-control" id="languageSelect">
-                <option value="" disabled selected>Select a language</option>
-              </select>
-            </div>
-          </div>
-          <div class="col-md-4">
-            <button type="button" class="btn btn-primary mt-4" id="searchButton">Search</button>
-          </div>
+            <button type="submit" class="btn btn-primary col-12 col-md-4 mb-3" id="btn-get-matches">Search</button>
         </div>
-      </div>
+    </form>
+    <div id="alert-search" class="alert alert-warning d-none" role="alert">
+        Please input a search term to get the matches.
+    </div>
+    <div id="spinner-forecast-results" class="spinner-border text-primary d-none" role="status">
+    <span class="visually-hidden">Loading...</span>
+    </div>
+    <h2 id="header-matches"></h2>
+    <div class="container">
+        <div id="search-results" class="grid">
+        </div>
+    </div>
 </main>
 {% endblock %}
