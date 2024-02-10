@@ -1,7 +1,7 @@
 .container-fluid {
     padding-left: 10vw;
     padding-right: 10vw;
-    max-width: 1500px;
+    max-width: 1400px;
 }
 
 .grid {
@@ -11,4 +11,25 @@
 .grid-item {
     width: 300px;
     margin-bottom: 20px;
+}
+
+#heading-title {
+    margin-top: 20px;
+    margin-bottom: 20px;
+}
+
+.header-container {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    margin-bottom: 20px;
+}
+
+.header-container h2 {
+    margin-right: 10px;
+}
+
+.header-container .icon {
+    width: 40px;
+    height: auto;
 }

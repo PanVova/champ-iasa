@@ -1,6 +1,8 @@
-const grid = document.querySelector('#search-results');
+function getMatches() {
+    const query = document.querySelector('#input-query').value;
+    const spinnerSearchResults = document.querySelector('#spinner-search-results');
+    spinnerSearchResults.classList.remove('d-none');
 
-function getMatches(query) {
     fetch(`${url_get_matches}?q=${query}`)
         .then(response => {
             if (!response.ok) {
@@ -12,6 +14,7 @@ function getMatches(query) {
         })
         .then(data => {
             updateSearchResults(data.articles);
+            spinnerSearchResults.classList.add('d-none');
         })
         .catch(error => {
             console.error('Error:', error);
@@ -29,7 +32,7 @@ function validateSearchForm() {
     }
 
     alertSearch.classList.add('d-none');
-    getMatches(query);
+    window.location.href = '/search?q=' + encodeURIComponent(query);
     return false;
 }
 

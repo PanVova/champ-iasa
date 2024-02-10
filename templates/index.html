@@ -1,28 +1,3 @@
 {% extends 'base.html' %}
 {% block content %}
-<main class="container-fluid" id="home-content">
-    <h1>News Sentiment Analysis</h1>
-    <form autocomplete="off" onsubmit="return validateSearchForm()" id="form-search" name="form-search">
-        <div class="row">
-            <div class="col-12 col-md-8 mb-3">
-                <div class="form-floating">
-                    <input type="text" class="form-control" id="input-query" placeholder="Enter a search term">
-                    <label for="input-query">Search query</label>
-                </div>
-            </div>
-            <button type="submit" class="btn btn-primary col-12 col-md-4 mb-3" id="btn-get-matches">Search</button>
-        </div>
-    </form>
-    <div id="alert-search" class="alert alert-warning d-none" role="alert">
-        Please input a search term to get the matches.
-    </div>
-    <div id="spinner-forecast-results" class="spinner-border text-primary d-none" role="status">
-    <span class="visually-hidden">Loading...</span>
-    </div>
-    <h2 id="header-matches"></h2>
-    <div class="container">
-        <div id="search-results" class="grid">
-        </div>
-    </div>
-</main>
 {% endblock %}

@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+{% block content %}
+<div id="spinner-search-results" class="spinner-border text-primary d-none" role="status">
+<span class="visually-hidden">Loading...</span>
+</div>
+<div class="header-container">
+    <h2 id="heading-matches"></h2>
+    <a href="{{ url_for('rss', q=data['query']) }}">
+        <img class="icon" src="/static/icons/rss.svg" alt="RSS feed">
+    </a>
+</div>
+<div class="container">
+    <div id="search-results" class="grid">
+        
+    </div>
+</div>
+<script>
+    const grid = document.querySelector('#search-results');
+    const inputQuery = document.querySelector('#input-query');
+    inputQuery.value = "{{ data['query'] }}"
+    const headingMatches = document.querySelector('#heading-matches');
+    headingMatches.textContent = `Search results for "${inputQuery.value}"`;
+    getMatches();
+</script>
+{% endblock %}
