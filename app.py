@@ -7,6 +7,7 @@ from dotenv import load_dotenv
 import requests
 import json
 from openai import OpenAI
+from datetime import datetime, timedelta
 
 client = OpenAI(
     api_key=os.environ.get("OPENAI_API_KEY")
@@ -38,10 +39,14 @@ def index():
 @app.route('/search', methods=['GET'])
 def search():
     query = request.args.get('q')
+    duration = request.args.get('duration')
     if not query:
         return redirect(url_for('index'))
+    if not duration:
+        duration = 'month'
     data = {
-        'query': query
+        'query': query.lower(),
+        'duration': duration
     }
     return render_template('search.html', data=data)
 
@@ -49,16 +54,17 @@ def search():
 @app.route('/rss')
 def rss():
     query = request.args.get('q')
+    duration = request.args.get('duration')
     if not query:
         return redirect(url_for('index'))
-    data = fetch_data(query)
+    data = fetch_data(query, duration)
     fg = FeedGenerator()
     fg.id('https://content-analyzer.com/rss')
     fg.title('Content Analyzer')
     fg.author({'name': 'Oleksii Nakhod', 'email': 'alexey.nakhod@gmail.com'})
     fg.subtitle('Content analysis using NLP')
-    fg.link(href=url_for('rss', q=query), rel='self')
-    fg.link(href=url_for('search', q=query), rel='alternate')
+    fg.link(href=url_for('rss', q=query, duration=duration), rel='self')
+    fg.link(href=url_for('search', q=query, duration=duration), rel='alternate')
     fg.description('Content analysis using NLP')
     fg.language('en')
 
@@ -78,11 +84,12 @@ def rss():
 @app.route('/get-matches', methods=['GET'])
 def get_matches():
     query = request.args.get('q')
-    return fetch_data(query)
+    duration = request.args.get('duration')
+    return fetch_data(query, duration)
     
 
-def fetch_data(query):
-    content = get_content(query)
+def fetch_data(query, duration):
+    content = get_content(query, duration)
     return content
 
 
@@ -96,21 +103,36 @@ def check_cache(cache_key):
         return None
 
 
-def get_content(query):
-    cache_key = f'newsapi_get_matches_{query}'
+def get_content(query, duration='month'):
+    cache_key = f'newsapi_get_matches_{query}_{duration}'
     cached_data = check_cache(cache_key)
     if cached_data:
         return cached_data
     
     url = 'https://newsapi.org/v2/everything'
+    request_params = {
+        'q': query,
+        'apiKey': newsapi_key,
+        'sortBy': 'relevancy',
+        'pageSize': 10
+    }
+    now = datetime.now()
+    match duration:
+        case 'day':
+            request_params['from'] = now - timedelta(days=2)
+            
+        case 'week':
+            request_params['from'] = now - timedelta(days=7)
+            
+        case 'month':
+            request_params['from'] = now - timedelta(days=30)
+            
+        case _:
+            pass
+    
     response = requests.get(
         url,
-        params={
-            'q': query,
-            'apiKey': newsapi_key,
-            'sortBy': 'relevancy',
-            'pageSize': 10
-        }
+        params=request_params
     )
     
     if response.status_code == 401 and response.json()['code'] == 'apiKeyInvalid':
@@ -154,7 +176,7 @@ def analyze_content():
                         },
                         "sentiment": {
                             "type": "number",
-                            "description": "Overall sentiment of the content where 0 is negative, 1 is positive, and 0.5 is neutral. Prefer extremes",
+                            "description": "Overall sentiment of the content where 0 is negative, 1 is positive, and 0.5 is neutral. Prefer extremes"
                         },
                         "keywords": {
                             "type": "array",
@@ -162,7 +184,7 @@ def analyze_content():
                             "items": {
                                 "type": "string"
                             }
-                        },
+                        }
                     },
                     "required": [
                         "summary",
@@ -179,6 +201,7 @@ def analyze_content():
             }
         }
     )
+    app.logger.info(chat_completion)
     data = json.loads(chat_completion.choices[0].message.tool_calls[0].function.arguments)
     cache.set(cache_key, data)
     return data

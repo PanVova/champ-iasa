@@ -21,14 +21,25 @@
         <h1 id="heading-title">Content Analyzer</h1>
         <form autocomplete="off" onsubmit="return validateSearchForm()" id="form-search" name="form-search">
             <div class="row">
-                <div class="col-12 col-md-8 mb-3">
+                <div class="col-12 col-md-6 mb-3">
                     <div class="form-floating">
                         <input type="text" class="form-control" id="input-query" placeholder="Enter a search term">
                         <label for="input-query">Search query</label>
                     </div>
                 </div>
-                <button type="submit" class="btn btn-primary col-12 col-md-4 mb-3" id="btn-get-matches">Search</button>
+                <div class="col-12 col-md-3 mb-3">
+                    <div class="form-floating">
+                        <select class="form-select" id="input-duration" aria-label="Duration">
+                            <option value="month" selected>month</option>
+                            <option value="week">week</option>
+                            <option value="day">day</option>
+                        </select>
+                        <label for="input-duration">Time period</label>
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary col-12 col-md-3 mb-3" id="btn-get-matches">Search</button>
             </div>
+
         </form>
         <div id="alert-search" class="alert alert-warning d-none" role="alert">
             Please input a search term to get the matches.
