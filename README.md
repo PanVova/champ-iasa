@@ -4,7 +4,10 @@
 This project is a content analysis application for the [IASA Champ '24](http://champ.iasa.kpi.ua/) competition. It uses the [NewsAPI](https://newsapi.org/) to fetch news articles by keyword and the [OpenAI API](https://platform.openai.com/docs/overview) to perform NLP on them.
 
 Here's a quick video demo of the application:  
-[Demo](docs/demo.mp4)
+
+https://github.com/PanVova/champ-iasa/assets/37262034/77b74968-7ebf-4a2b-abba-fa75aca3eef0
+
+
 
 ## Features
 - Relevant news articles for the last day, month, and week
