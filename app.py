@@ -9,9 +9,7 @@ import json
 from openai import OpenAI
 from datetime import datetime, timedelta
 
-client = OpenAI(
-    api_key=os.environ.get("OPENAI_API_KEY")
-)
+load_dotenv()
 
 app = Flask(__name__)
 
@@ -27,9 +25,12 @@ cache = Cache(
     }
 )
 
-load_dotenv()
 newsapi_key = os.environ.get('NEWSAPI_KEY')
+duration_options = ['month', 'week', 'day']
 
+client = OpenAI(
+    api_key=os.environ.get("OPENAI_API_KEY")
+)
 
 @app.route('/', methods=['GET'])
 def index():
@@ -42,7 +43,7 @@ def search():
     duration = request.args.get('duration')
     if not query:
         return redirect(url_for('index'))
-    if not duration:
+    if duration not in duration_options:
         duration = 'month'
     data = {
         'query': query.lower(),
