@@ -5,7 +5,12 @@ import logging
 import os
 from dotenv import load_dotenv
 import requests
+import json
+from openai import OpenAI
 
+client = OpenAI(
+    api_key=os.environ.get("OPENAI_API_KEY")
+)
 
 app = Flask(__name__)
 
@@ -48,13 +53,13 @@ def rss():
         return redirect(url_for('index'))
     data = fetch_data(query)
     fg = FeedGenerator()
-    fg.id('https://news-analyzer.com/rss')
-    fg.title('News Analyzer')
+    fg.id('https://content-analyzer.com/rss')
+    fg.title('Content Analyzer')
     fg.author({'name': 'Oleksii Nakhod', 'email': 'alexey.nakhod@gmail.com'})
-    fg.subtitle('News analysis using NLP')
+    fg.subtitle('Content analysis using NLP')
     fg.link(href=url_for('rss', q=query), rel='self')
     fg.link(href=url_for('search', q=query), rel='alternate')
-    fg.description('News analysis using NLP')
+    fg.description('Content analysis using NLP')
     fg.language('en')
 
     for article in data['articles']:
@@ -77,35 +82,107 @@ def get_matches():
     
 
 def fetch_data(query):
-    url = 'https://newsapi.org/v2/everything'
-    cache_key = f'newsapi_get_matches_{query}'
+    content = get_content(query)
+    return content
+
+
+def check_cache(cache_key):
     cached_data = cache.get(cache_key)
     if cached_data:
-        app.logger.info('Cache hit! Returning cached data.')
+        app.logger.info(f'{cache_key} cache hit! Returning cached data.')
+        return cached_data
+    else:
+        app.logger.info(f'{cache_key} cache miss! Making a new request...')
+        return None
+
+
+def get_content(query):
+    cache_key = f'newsapi_get_matches_{query}'
+    cached_data = check_cache(cache_key)
+    if cached_data:
         return cached_data
     
-    app.logger.info('Cache miss! Fetching data from News API.')
+    url = 'https://newsapi.org/v2/everything'
     response = requests.get(
         url,
         params={
             'q': query,
-            'apiKey': newsapi_key
+            'apiKey': newsapi_key,
+            'sortBy': 'relevancy',
+            'pageSize': 10
         }
     )
     
-    if response.status_code == 200:
-        cache.set(cache_key, response.json())
-        return jsonify(response.json()), response.status_code
-    
-    elif response.status_code == 401 and response.json()['code'] == 'apiKeyInvalid':
+    if response.status_code == 401 and response.json()['code'] == 'apiKeyInvalid':
         app.logger.error('Please provide a valid News API key in the NEWSAPI_KEY environment variable.')
         return jsonify({
             'error': 'Please provide a valid News API key in the NEWSAPI_KEY environment variable.'
         }), 401
     
-    else:
-        return jsonify(response.json()), response.status_code
-    
+    elif response.status_code == 200:
+        data = response.json()
+        cache.set(cache_key, data)
+        return data
+
+
+@app.route('/analyze-content', methods=['POST'])
+def analyze_content():
+    content = request.json['content']
+    cache_key = f'newsapi_get_matches_{content}'
+    cached_data = check_cache(cache_key)
+    if cached_data:
+        return cached_data
+    chat_completion = client.chat.completions.create(
+        messages=[
+            {
+                "role": "user",
+                "content": content,
+            }
+        ],
+        model="gpt-3.5-turbo",
+        tools=[{
+            "type": "function",
+            "function": {
+                "name": "analyze_content",
+                "description": "Analyze a piece of content",
+                "parameters": {
+                    "type": "object",
+                    "properties": {
+                        "summary": {
+                            "type": "string",
+                            "description": "Five-sentence summary of the most important information"
+                        },
+                        "sentiment": {
+                            "type": "number",
+                            "description": "Overall sentiment of the content where 0 is negative, 1 is positive, and 0.5 is neutral. Prefer extremes",
+                        },
+                        "keywords": {
+                            "type": "array",
+                            "description": "Keywords in the content",
+                            "items": {
+                                "type": "string"
+                            }
+                        },
+                    },
+                    "required": [
+                        "summary",
+                        "sentiment",
+                        "keywords"
+                    ]
+                }
+            }
+        }],
+        tool_choice={
+            "type": "function",
+            "function": {
+                "name": "analyze_content"
+            }
+        }
+    )
+    data = json.loads(chat_completion.choices[0].message.tool_calls[0].function.arguments)
+    cache.set(cache_key, data)
+    return data
+
 
 @app.errorhandler(404)
 def handle_404(e):

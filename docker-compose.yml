@@ -8,3 +8,4 @@ services:
       - FLASK_APP=app.py
       - FLASK_RUN_HOST=0.0.0.0
       - NEWSAPI_KEY=YOUR_API_KEY
+      - OPENAI_API_KEY=YOUR_API_KEY
