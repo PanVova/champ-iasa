@@ -3,6 +3,9 @@
 ## Overview
 This project is a content analysis application for the [IASA Champ '24](http://champ.iasa.kpi.ua/) competition. It uses the [NewsAPI](https://newsapi.org/) to fetch news articles by keyword and the [OpenAI API](https://platform.openai.com/docs/overview) to perform NLP on them.
 
+Here's a quick video demo of the application:  
+[Demo](docs/demo.mp4)
+
 ## Features
 - Relevant news articles for the last day, month, and week
 - Content summarization, sentiment analysis, and keyword extraction
@@ -68,3 +71,9 @@ The project is structured as follows:
 
 ## Testing
 The project includes a test suite to ensure the reliability and performance of the application. To run the tests, execute `python -m unittest`.
+
+## Explanation
+### Data aggregation
+Data is aggregated using the NewsAPI, returning the most relevant 10 articles for the last day, month, and week.
+### NLP
+The OpenAI API function calling is used to perform NLP on the articles, generating a summary, sentiment, and keywords.
